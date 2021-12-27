@@ -11,6 +11,7 @@ class DonationField extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      validAmount: true,
       donationAmount: 0,
       gasEstimate: 0,
       total: 0,
@@ -19,52 +20,66 @@ class DonationField extends Component {
 
   handleChange = async (event) => {
     const donationAmount = Number(event.target.value);
-    this.setState({ donationAmount });
+
+    if (donationAmount <= 0) {
+      this.setState({ validAmount: false });
+      return;
+    }
+    this.setState({ validAmount: true });
+
+    this.setState({ donationAmount: donationAmount.toString() });
 
     const gasEstimateGwei = await this.props.tipjar.methods
-      .donate(this.props.hexId)
-      .estimateGas();
+      .donate(this.props.pathHex)
+      .estimateGas({ from: this.state.account, value: donationAmount });
 
     const gasEstimate =
       1000000000 * Web3.utils.fromWei(gasEstimateGwei.toString());
+
+    this.setState({ gasEstimate });
 
     this.setState({ total: donationAmount + gasEstimate });
   };
 
   handleSubmit = async () => {
-    const donationAmount = Web3.utils
-      .toWei(this.state.donationAmount.toString())
-      .toString();
+    const donationAmount = Web3.utils.toWei(
+      this.state.donationAmount.toString()
+    );
     this.props.tipjar.methods
-      .donate(this.props.hexId)
+      .donate(this.props.pathHex)
       .send({ from: this.props.account, value: donationAmount });
   };
 
   render() {
     return (
       <div>
-        <h1>{window.location.pathname.replace("/", "")}</h1>
-        <h2>{this.props.account}</h2>
+        <h1>{this.props.path}</h1>
+
+        <h4>{this.props.account}</h4>
+
         <InputGroup className="mb-3">
           <InputGroup.Text>Donation</InputGroup.Text>
           <FormControl
             type="number"
             placeholder="Amount to donate"
-            value={this.state.donationAmount}
+            isInvalid={!this.state.validAmount}
             onChange={this.handleChange}
           />
           <InputGroup.Text>MATIC</InputGroup.Text>
         </InputGroup>
+
         <InputGroup className="mb-3">
           <InputGroup.Text>Estimated Gas</InputGroup.Text>
-          <FormControl value={this.state.gasEstimate} readOnly />
+          <FormControl value={this.state.gasEstimate.toString()} readOnly />
           <InputGroup.Text>MATIC</InputGroup.Text>
         </InputGroup>
+
         <InputGroup className="mb-3">
           <InputGroup.Text>Total</InputGroup.Text>
           <FormControl value={this.state.total.toString()} readOnly />
           <InputGroup.Text>MATIC</InputGroup.Text>
         </InputGroup>
+
         <Button variant="primary" onClick={this.handleSubmit}>
           Donate
         </Button>
@@ -86,20 +101,23 @@ class CreateJar extends Component {
     const jarId = event.target.value;
     this.setState({ jarId });
 
-    const hexId = Web3.utils.utf8ToHex(jarId);
+    const hexId = Web3.utils.padRight(Web3.utils.utf8ToHex(jarId), 34);
 
-    const validId = await this.props.tipjar.methods.allowedId(hexId).call();
+    const validId = await this.props.tipjar.methods.isValidId(hexId).call();
     this.setState({ validId });
   };
 
   handleSubmit = async () => {
-    const hexId = Web3.utils.utf8ToHex(this.state.jarId);
-    console.log(this.state.jarId);
-    console.log(hexId);
+    const hexId = Web3.utils.padRight(
+      Web3.utils.utf8ToHex(this.state.jarId),
+      34
+    );
 
-    this.props.tipjar.methods
+    await this.props.tipjar.methods
       .createTipJar(hexId)
       .send({ from: this.props.account, value: 0 });
+
+    window.location.href = "/" + this.state.jarId;
   };
 
   render() {
@@ -113,12 +131,10 @@ class CreateJar extends Component {
             type="text"
             placeholder="Enter a Jar Id"
             isInvalid={!this.state.validId}
-            value={this.state.formJarId}
             onChange={this.handleChange}
           />
-          <InputGroup.Text>MATIC</InputGroup.Text>
           <FormControl.Feedback type="invalid">
-            Please choose an Id that is atleast 3 characters and only contains
+            Please choose an id that is at least 3 characters and only contains
             letters and numbers
           </FormControl.Feedback>
         </InputGroup>
@@ -132,21 +148,41 @@ class CreateJar extends Component {
   }
 }
 
+class EditJar extends Component {
+  render() {
+    return (
+      <div>
+        <Button
+          variant="danger"
+          onClick={async () => {
+            await this.props.tipjar.methods
+              .deleteTipJar(this.props.pathHex)
+              .send({ from: this.props.account, value: 0 });
+
+            window.location.href = "/";
+          }}
+        >
+          Delete
+        </Button>
+      </div>
+    );
+  }
+}
+
 class Main extends Component {
   constructor(props) {
     super(props);
-    //this.setState({ isJar: true });
   }
 
   render() {
     return this.props.isJar ? (
       <Container>
         <DonationField {...this.props} />
-        <p>isJar: {this.props.isJar.toString()}</p>
-        <p>allowedId: {this.props.allowedId.toString()}</p>
+        {this.props.isOwner ? <EditJar {...this.props} /> : null}
       </Container>
     ) : (
       <Container>
+        {this.props.path === "" ? null : (window.location.href = "/")}
         <CreateJar {...this.props} />
       </Container>
     );

@@ -8,19 +8,24 @@ import Spinner from "react-bootstrap/Spinner";
 class App extends Component {
   constructor(props) {
     super(props);
+
+    const path = window.location.pathname.replace("/", "");
+
+    const pathHex = Web3.utils.padRight(Web3.utils.utf8ToHex(path), 34);
+
     this.state = {
-      account: null,
-      tipjar: null,
       loading: true,
-      jarId: window.location.pathname.replace("/", ""),
-      hexId: Web3.utils.toHex(window.location.pathname.replace("/", "")),
+      path,
+      pathHex,
     };
+
     this.loadThings();
   }
 
   async loadThings() {
     await this.initWeb3();
     await this.getData();
+
     this.setState({ loading: false });
   }
 
@@ -30,7 +35,7 @@ class App extends Component {
       window.web3 = new Web3(window.ethereum);
       await window.ethereum.request({ method: "eth_requestAccounts" });
     } else {
-      window.alert("No wallet idiot");
+      window.alert("No wallet detected");
     }
 
     const web3 = window.web3;
@@ -44,10 +49,7 @@ class App extends Component {
     const networkData = TipJar.networks[networkId];
     if (networkData) {
       const tipjar = new web3.eth.Contract(TipJar.abi, networkData.address);
-      this.setState({ tipjar: tipjar });
-
-      //const isJar = await tipjar.methods.isJar(0x7b).call();
-      //this.setState({ isJar });
+      this.setState({ tipjar });
     } else {
       // If contract is not on current network, then request switch to Polygon
       try {
@@ -86,14 +88,13 @@ class App extends Component {
 
   async getData() {
     const isJar = await this.state.tipjar.methods
-      .isJar(this.state.hexId)
+      .isJar(this.state.pathHex)
       .call();
     this.setState({ isJar });
 
-    const allowedId = await this.state.tipjar.methods
-      .allowedId(this.state.hexId)
-      .call();
-    this.setState({ allowedId });
+    const jar = await this.state.tipjar.methods.jar(this.state.pathHex).call();
+    const isOwner = this.state.account === jar.owner;
+    this.setState({ isOwner });
   }
 
   render() {
@@ -102,12 +103,12 @@ class App extends Component {
         {this.state.loading ? (
           <div id="loader" className="text-center mt-5">
             <Spinner animation="border" role="status">
-              <span className="visually-hidden">Waiting for Ethereum</span>
+              <span className="visually-hidden"></span>
             </Spinner>
+            <p>Waiting for Ethereum</p>
           </div>
         ) : (
           <div id="loader" className="text-center mt-5">
-            <p>Main</p>
             <Main {...this.state} />
           </div>
         )}

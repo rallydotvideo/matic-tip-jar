@@ -1,53 +1,55 @@
 pragma solidity ^0.5.0;
 
 contract TipJar {
-    mapping(bytes => bool) public isJar;
-    mapping(bytes => Jar) public jar;
+    mapping(bytes32 => bool) public isJar;
+    mapping(bytes32 => Jar) public jar;
 
     struct Jar {
-        bytes id;
+        bytes32 id;
         address owner;
         uint256 balance;
     }
 
-    event jarCreation(
-        bytes jarId,
+    event jarCreation (
+        bytes32 jarId,
         address owner
     );
 
-    event donation(
-        bytes jarId,
+    event jarDeletion (
+        bytes32 jarId,
+        address owner
+    );
+
+    event jarTransfer (
+        bytes32 jarId,
+        address owner,
+        address receiver
+    );
+
+    event donation (
+        bytes32 jarId,
         address sender,
         uint256 amount
     );
 
-    event withdrawal(
-        bytes jarId,
+    event withdrawal (
+        bytes32 jarId,
+        address owner,
         address receiver,
         uint256 amount
     );
 
-    // Ensures a jar exists with the id
-    modifier validJar(bytes memory id) {
-        require(isJar[id]);
-        _;
-    }
-
     // Ensure the message sender owns the tipjar
-    modifier onlyOwner(bytes memory id) {
+    modifier onlyOwner(bytes32 id) {
         require(msg.sender == jar[id].owner);
         _;
     }
 
-    constructor() public {
-    }
-
-    /** @dev Function to determine if an jar Id is allowed
-      * @param id potential jar id
+    /** @dev Function to determine if an jar id is allowed
+      * @param id - potential jar id that gets checked
       */
-    function allowedId(bytes memory id) public pure returns (bool) {
-        //bytes memory bStr = bytes(str);
-        if (id.length < 3){
+    function isValidId(bytes32 id) public pure returns (bool) {
+        if (id.length < 3) {
             return false;
         }
         for (uint i = 0; i < id.length; i++) {
@@ -55,8 +57,10 @@ contract TipJar {
                 continue;
             } else if (id[i] >= "A" && id[i] <= "z") {
                 continue;
-            } else if (id[i] >= "0" && id[i] <= "9"){
+            } else if (id[i] >= "0" && id[i] <= "9") {
                 continue;
+            } else if (id[i] == 0x00 && i >= 3) {
+                return true;
             } else {
                 return false;
             }
@@ -65,41 +69,82 @@ contract TipJar {
     }
 
     /** @dev Creates a tip jar with the specified id and the message sender as the owner
-      * @param id jar id
+      * @param id - id that the jar gets created at
       */
-    function createTipJar(bytes memory id) public {
-        require(allowedId(id)); // Ensures Id is valid
-        require (!isJar[id]); // Ensures Id hasn't been used yet
+    function createTipJar(bytes32 id) public {
+        require (isValidId(id)); // Ensures id is allowed
+        require (!isJar[id]); // Ensures id hasn't been used yet
 
         isJar[id] = true;
         jar[id] = Jar ({
-            id:id,
-            owner:msg.sender,
-            balance:0
+            id: id,
+            owner: msg.sender,
+            balance: 0
         });
 
         emit jarCreation(id, msg.sender);
     }
 
     /** @dev Sends an amount to the jar id
-      * @param id jar id
+      * @param id - id for the jar that gets donated to
       */
-    function donate(bytes calldata id) external payable validJar(id) {
+    function donate(bytes32 id) external payable {
+        require (isValidId(id));
+        require (isJar[id]);
+
         jar[id].balance += msg.value;
 
         emit donation(id, msg.sender, msg.value);
     }
 
     /** @dev Withdraws a specified amount to the receiver address
-      * @param id jar id to withdraw from
-      * @param receiver address to send to
-      * @param amount amount to withdraw
+      * @param id - jar id to withdraw from
+      * @param receiver - address to send to
+      * @param amount - amount to withdraw
       */
-    function withdraw(bytes memory id, address payable receiver, uint amount) public validJar(id) onlyOwner(id){
+    function withdraw(bytes32 id, address payable receiver, uint amount) public onlyOwner(id) {
+        require (isValidId(id));
+        require (isJar[id]);
         require (jar[id].balance >= amount);
+
+        address owner = jar[id].owner;
+
         jar[id].balance -= amount;
         receiver.transfer(amount);
 
-        emit withdrawal(id, receiver, amount);
+        emit withdrawal(id, owner, receiver, amount);
+    }
+
+    /**
+      * @dev Deletes the specified tip jar
+      * @param id - id for the jar that gets deleted
+      */
+    function deleteTipJar(bytes32 id) public onlyOwner(id) {
+        require (isValidId(id));        
+        require (isJar[id]);
+        require (jar[id].balance == 0);
+
+        address owner = jar[id].owner;
+
+        delete jar[id];
+        delete isJar[id];
+
+        emit jarDeletion(id, owner);
+    }
+
+    /**
+      * @dev Transfers the specified tip jar to a new owner
+      * @param id - id for the jar that gets moved
+      * @param receiver - new owner of the jar
+      */
+    function transferTipJar(bytes32 id, address receiver) public onlyOwner(id) {
+        require (isValidId(id));        
+        require (isJar[id]);
+
+        address owner = jar[id].owner;
+
+        jar[id].owner = receiver;
+
+        emit jarTransfer(id, owner, receiver);
     }
 }
