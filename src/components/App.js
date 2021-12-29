@@ -39,6 +39,7 @@ class App extends Component {
     }
 
     const web3 = window.web3;
+    this.setState({ web3 });
 
     // Adds the user's address to the state
     const accounts = await web3.eth.getAccounts();
@@ -94,21 +95,23 @@ class App extends Component {
 
     const jar = await this.state.tipjar.methods.jar(this.state.pathHex).call();
     const isOwner = this.state.account === jar.owner;
+
     this.setState({ isOwner });
+    this.setState({ balance: Web3.utils.toBN(jar.balance) });
   }
 
   render() {
     return (
       <div>
         {this.state.loading ? (
-          <div id="loader" className="text-center mt-5">
+          <div className="text-center mt-5">
             <Spinner animation="border" role="status">
               <span className="visually-hidden"></span>
             </Spinner>
             <p>Waiting for Ethereum</p>
           </div>
         ) : (
-          <div id="loader" className="text-center mt-5">
+          <div className="text-center mt-5">
             <Main {...this.state} />
           </div>
         )}

@@ -7,88 +7,6 @@ import Button from "react-bootstrap/Button";
 
 import "./App.css";
 
-class DonationField extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      validAmount: true,
-      donationAmount: 0,
-      gasEstimate: 0,
-      total: 0,
-    };
-  }
-
-  handleChange = async (event) => {
-    const donationAmount = Number(event.target.value);
-
-    if (donationAmount <= 0) {
-      this.setState({ validAmount: false });
-      return;
-    }
-    this.setState({ validAmount: true });
-
-    this.setState({ donationAmount: donationAmount.toString() });
-
-    const gasEstimateGwei = await this.props.tipjar.methods
-      .donate(this.props.pathHex)
-      .estimateGas({ from: this.state.account, value: donationAmount });
-
-    const gasEstimate =
-      1000000000 * Web3.utils.fromWei(gasEstimateGwei.toString());
-
-    this.setState({ gasEstimate });
-
-    this.setState({ total: donationAmount + gasEstimate });
-  };
-
-  handleSubmit = async () => {
-    const donationAmount = Web3.utils.toWei(
-      this.state.donationAmount.toString()
-    );
-    this.props.tipjar.methods
-      .donate(this.props.pathHex)
-      .send({ from: this.props.account, value: donationAmount });
-  };
-
-  render() {
-    return (
-      <div>
-        <h1>{this.props.path}</h1>
-
-        <h4>{this.props.account}</h4>
-
-        <InputGroup className="mb-3">
-          <InputGroup.Text>Donation</InputGroup.Text>
-          <FormControl
-            type="number"
-            placeholder="Amount to donate"
-            isInvalid={!this.state.validAmount}
-            onChange={this.handleChange}
-          />
-          <InputGroup.Text>MATIC</InputGroup.Text>
-        </InputGroup>
-
-        <InputGroup className="mb-3">
-          <InputGroup.Text>Estimated Gas</InputGroup.Text>
-          <FormControl value={this.state.gasEstimate.toString()} readOnly />
-          <InputGroup.Text>MATIC</InputGroup.Text>
-        </InputGroup>
-
-        <InputGroup className="mb-3">
-          <InputGroup.Text>Total</InputGroup.Text>
-          <FormControl value={this.state.total.toString()} readOnly />
-          <InputGroup.Text>MATIC</InputGroup.Text>
-        </InputGroup>
-
-        <Button variant="primary" onClick={this.handleSubmit}>
-          Donate
-        </Button>
-        {}
-      </div>
-    );
-  }
-}
-
 class CreateJar extends Component {
   constructor(props) {
     super(props);
@@ -104,7 +22,8 @@ class CreateJar extends Component {
     const hexId = Web3.utils.padRight(Web3.utils.utf8ToHex(jarId), 34);
 
     const validId = await this.props.tipjar.methods.isValidId(hexId).call();
-    this.setState({ validId });
+    const usedId = await this.props.tipjar.methods.isJar(hexId).call();
+    this.setState({ validId: validId && !usedId });
   };
 
   handleSubmit = async () => {
@@ -134,8 +53,8 @@ class CreateJar extends Component {
             onChange={this.handleChange}
           />
           <FormControl.Feedback type="invalid">
-            Please choose an id that is at least 3 characters and only contains
-            letters and numbers
+            Please choose an unused id that is at least 3 characters and only
+            contains letters and numbers
           </FormControl.Feedback>
         </InputGroup>
 
@@ -148,10 +67,232 @@ class CreateJar extends Component {
   }
 }
 
-class EditJar extends Component {
+class DonationField extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      donationAmount: Web3.utils.toBN(0),
+      validDonationAmount: true,
+
+      totalGasEstimate: Web3.utils.toBN(0),
+      total: Web3.utils.toBN(0),
+    };
+  }
+
+  handleChange = async (event) => {
+    let donationAmount = null;
+    try {
+      donationAmount = Web3.utils.toWei(event.target.value);
+      donationAmount = Web3.utils.toBN(donationAmount);
+    } catch (err) {
+      this.setState({ validDonationAmount: false });
+      return;
+    }
+
+    this.setState({ validDonationAmount: true });
+
+    this.setState({ donationAmount });
+
+    let gasEstimate = await this.props.tipjar.methods // Total gas used for transaction
+      .donate(this.props.pathHex)
+      .estimateGas({
+        from: this.state.account,
+        amount: this.state.donationAmount,
+      });
+    gasEstimate = Web3.utils.toBN(gasEstimate);
+
+    let gasPrice = await this.props.web3.eth.getGasPrice(); // Current gas price in Wei
+    gasPrice = Web3.utils.toBN(gasPrice);
+
+    const totalGasEstimate = gasEstimate.mul(gasPrice);
+
+    this.setState({ totalGasEstimate });
+
+    this.setState({ total: donationAmount.add(totalGasEstimate) });
+  };
+
+  handleSubmit = async () => {
+    await this.props.tipjar.methods.donate(this.props.pathHex).send({
+      from: this.props.account,
+      value: this.state.donationAmount,
+    });
+
+    window.location.reload(false);
+  };
+
   render() {
     return (
       <div>
+        <h1>{this.props.path}</h1>
+
+        <h4>{this.props.account}</h4>
+
+        <InputGroup className="mb-3">
+          <InputGroup.Text>Donation</InputGroup.Text>
+          <FormControl
+            type="number"
+            placeholder="Amount to donate"
+            isInvalid={!this.state.validDonationAmount}
+            onChange={this.handleChange}
+          />
+          <InputGroup.Text>MATIC</InputGroup.Text>
+        </InputGroup>
+
+        <InputGroup className="mb-3">
+          <InputGroup.Text>Estimated Gas</InputGroup.Text>
+          <FormControl
+            value={Web3.utils.fromWei(this.state.totalGasEstimate)}
+            readOnly
+          />
+          <InputGroup.Text>MATIC</InputGroup.Text>
+        </InputGroup>
+
+        <InputGroup className="mb-3">
+          <InputGroup.Text>Total</InputGroup.Text>
+          <FormControl value={Web3.utils.fromWei(this.state.total)} readOnly />
+          <InputGroup.Text>MATIC</InputGroup.Text>
+        </InputGroup>
+
+        <Button variant="primary" onClick={this.handleSubmit}>
+          Donate
+        </Button>
+        {}
+      </div>
+    );
+  }
+}
+
+class EditJar extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      withdrawAddress: "",
+      withdrawAmount: Web3.utils.toBN(0),
+
+      validWithdrawAddress: true,
+      validWithdrawAmount: true,
+
+      transferAddress: "",
+
+      validTransferAddress: true,
+    };
+  }
+
+  handleWithdrawAddressChange = async (event) => {
+    const withdrawAddress = event.target.value;
+
+    this.setState({ withdrawAddress });
+    this.setState({
+      validWithdrawAddress: Web3.utils.isAddress(withdrawAddress),
+    });
+  };
+
+  handleWithdrawAmountChange = async (event) => {
+    let withdrawAmount = null;
+    try {
+      withdrawAmount = Web3.utils.toWei(event.target.value);
+      withdrawAmount = Web3.utils.toBN(withdrawAmount);
+      this.setState({
+        validWithdrawAmount:
+          withdrawAmount.lte(this.props.balance) && withdrawAmount.gt(0),
+      });
+    } catch (err) {
+      this.setState({ validWithdrawAmount: false });
+      return;
+    }
+
+    this.setState({ withdrawAmount });
+
+    console.log(withdrawAmount.lte(this.props.balance) && withdrawAmount.gt(0));
+  };
+
+  handleWithdrawSubmit = async () => {
+    await this.props.tipjar.methods
+      .withdraw(
+        this.props.pathHex,
+        this.state.withdrawAddress,
+        this.state.withdrawAmount
+      )
+      .send({ from: this.props.account, value: 0 });
+
+    window.location.reload(false);
+  };
+
+  handleTransferAddressChange = async (event) => {
+    const transferAddress = event.target.value;
+
+    this.setState({ transferAddress });
+    this.setState({
+      validTransferAddress: Web3.utils.isAddress(transferAddress),
+    });
+  };
+
+  handleTransferSubmit = async () => {
+    await this.props.tipjar.methods
+      .transferTipJar(this.props.pathHex, this.state.transferAddress)
+      .send({ from: this.props.account, value: 0 });
+    window.location.reload(false);
+  };
+
+  render() {
+    return (
+      <div>
+        <hr />
+        <p>Current Balance: {Web3.utils.fromWei(this.props.balance)}</p>
+
+        <InputGroup className="mb-3">
+          <InputGroup.Text>Withdrawal Address</InputGroup.Text>
+
+          <FormControl
+            type="text"
+            placeholder="Address"
+            isInvalid={!this.state.validWithdrawAddress}
+            onChange={this.handleWithdrawAddressChange}
+          />
+
+          <InputGroup.Text>Amount</InputGroup.Text>
+
+          <FormControl
+            type="number"
+            placeholder="Amount"
+            isInvalid={!this.state.validWithdrawAmount}
+            onChange={this.handleWithdrawAmountChange}
+          />
+
+          <Button
+            onClick={this.handleWithdrawSubmit}
+            disabled={
+              !this.state.validWithdrawAddress ||
+              this.state.withdrawAddress === "" ||
+              !this.state.validWithdrawAmount ||
+              this.state.withdrawAmount.isZero()
+            }
+          >
+            Withdraw
+          </Button>
+        </InputGroup>
+
+        <InputGroup className="mb-3">
+          <InputGroup.Text>New Owner</InputGroup.Text>
+
+          <FormControl
+            type="text"
+            placeholder="Address"
+            isInvalid={!this.state.validTransferAddress}
+            onChange={this.handleTransferAddressChange}
+          />
+
+          <Button
+            onClick={this.handleTransferSubmit}
+            disabled={
+              !this.state.validTransferAddress ||
+              this.state.transferAddress === ""
+            }
+          >
+            Transfer Jar
+          </Button>
+        </InputGroup>
+
         <Button
           variant="danger"
           onClick={async () => {
@@ -161,8 +302,9 @@ class EditJar extends Component {
 
             window.location.href = "/";
           }}
+          disabled={this.props.balance > 0}
         >
-          Delete
+          Delete Tip Jar
         </Button>
       </div>
     );
@@ -182,8 +324,11 @@ class Main extends Component {
       </Container>
     ) : (
       <Container>
-        {this.props.path === "" ? null : (window.location.href = "/")}
-        <CreateJar {...this.props} />
+        {this.props.path === "" ? (
+          <CreateJar {...this.props} />
+        ) : (
+          (window.location.href = "/")
+        )}
       </Container>
     );
   }
