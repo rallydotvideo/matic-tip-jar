@@ -2,7 +2,7 @@
 
 Deploy to Polygon Testnet:
 
-`truffle migrate --network matic --reset`
+`truffle migrate --network mumbai --reset`
 
 Deploy to local emulator:
 

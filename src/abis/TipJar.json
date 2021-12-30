@@ -11004,8 +11004,7 @@
     }
   },
   "schemaVersion": "3.4.4",
-  "updatedAt": "2021-12-30T01:47:47.504Z",
-  "networkType": "ethereum",
+  "updatedAt": "2021-12-30T06:29:43.155Z",
   "devdoc": {
     "methods": {
       "createTipJar(bytes32)": {
