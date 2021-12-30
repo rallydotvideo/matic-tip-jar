@@ -4,6 +4,8 @@ import Web3 from "web3";
 import "./App.css";
 import Main from "./Main";
 import Spinner from "react-bootstrap/Spinner";
+import Button from "react-bootstrap/Button";
+import makeBlockie from "ethereum-blockies-base64";
 
 class App extends Component {
   constructor(props) {
@@ -112,6 +114,25 @@ class App extends Component {
           </div>
         ) : (
           <div className="text-center mt-5">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                navigator.clipboard.writeText(this.state.account);
+              }}
+            >
+              <img
+                height={30}
+                width={30}
+                alt="Unique generated icon for Ethereum account"
+                src={makeBlockie(this.state.account)}
+              />
+              {" " +
+                this.state.account.slice(0, 8) +
+                "..." +
+                this.state.account.slice(-8) +
+                " 📋"}
+            </Button>
+            <br /> <br />
             <Main {...this.state} />
           </div>
         )}

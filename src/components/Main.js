@@ -16,14 +16,18 @@ class CreateJar extends Component {
   }
 
   handleChange = async (event) => {
-    const jarId = event.target.value;
-    this.setState({ jarId });
+    try {
+      const jarId = event.target.value;
+      const hexId = Web3.utils.padRight(Web3.utils.utf8ToHex(jarId), 34);
+      const usedId = await this.props.tipjar.methods.isJar(hexId).call();
 
-    const hexId = Web3.utils.padRight(Web3.utils.utf8ToHex(jarId), 34);
+      const validId = await this.props.tipjar.methods.isValidId(hexId).call();
 
-    const validId = await this.props.tipjar.methods.isValidId(hexId).call();
-    const usedId = await this.props.tipjar.methods.isJar(hexId).call();
-    this.setState({ validId: validId && !usedId });
+      this.setState({ jarId });
+      this.setState({ validId: validId && !usedId });
+    } catch (err) {
+      this.setState({ validId: false });
+    }
   };
 
   handleSubmit = async () => {
@@ -42,8 +46,6 @@ class CreateJar extends Component {
   render() {
     return (
       <div>
-        <h2>{this.props.account}</h2>
-
         <InputGroup className="mb-3">
           <InputGroup.Text>Jar Id</InputGroup.Text>
           <FormControl
@@ -53,11 +55,10 @@ class CreateJar extends Component {
             onChange={this.handleChange}
           />
           <FormControl.Feedback type="invalid">
-            Please choose an unused id that is at least 3 characters and only
-            contains letters and numbers
+            Please choose an id that has not been used, is between 3 and 32
+            characters and only contains letters and numbers
           </FormControl.Feedback>
         </InputGroup>
-
         <Button variant="primary" onClick={this.handleSubmit}>
           Create
         </Button>
@@ -84,10 +85,9 @@ class DonationField extends Component {
     try {
       donationAmount = Web3.utils.toWei(event.target.value);
       donationAmount = Web3.utils.toBN(donationAmount);
-      console.log(donationAmount.isZero());
+
       this.setState({
-        validDonationAmount:
-          !donationAmount.isZero() && !donationAmount.isNeg(),
+        validDonationAmount: donationAmount.gt(0),
       });
     } catch (err) {
       this.setState({ validDonationAmount: false });
@@ -127,8 +127,6 @@ class DonationField extends Component {
     return (
       <div>
         <h1>{this.props.path}</h1>
-
-        <h4>{this.props.account}</h4>
 
         <InputGroup className="mb-3">
           <InputGroup.Text>Donation</InputGroup.Text>
@@ -212,8 +210,6 @@ class EditJar extends Component {
     }
 
     this.setState({ withdrawAmount });
-
-    console.log(withdrawAmount.lte(this.props.balance) && withdrawAmount.gt(0));
   };
 
   handleWithdrawSubmit = async () => {
@@ -251,7 +247,7 @@ class EditJar extends Component {
         <p>Current Balance: {Web3.utils.fromWei(this.props.balance)}</p>
 
         <InputGroup className="mb-3">
-          <InputGroup.Text>Withdrawal Address</InputGroup.Text>
+          <InputGroup.Text>Withdraw</InputGroup.Text>
 
           <FormControl
             type="text"
@@ -322,10 +318,6 @@ class EditJar extends Component {
 }
 
 class Main extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
     return this.props.isJar ? (
       <Container>
