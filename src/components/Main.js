@@ -84,12 +84,15 @@ class DonationField extends Component {
     try {
       donationAmount = Web3.utils.toWei(event.target.value);
       donationAmount = Web3.utils.toBN(donationAmount);
+      console.log(donationAmount.isZero());
+      this.setState({
+        validDonationAmount:
+          !donationAmount.isZero() && !donationAmount.isNeg(),
+      });
     } catch (err) {
       this.setState({ validDonationAmount: false });
       return;
     }
-
-    this.setState({ validDonationAmount: true });
 
     this.setState({ donationAmount });
 
@@ -153,7 +156,14 @@ class DonationField extends Component {
           <InputGroup.Text>MATIC</InputGroup.Text>
         </InputGroup>
 
-        <Button variant="primary" onClick={this.handleSubmit}>
+        <Button
+          variant="primary"
+          onClick={this.handleSubmit}
+          disabled={
+            !this.state.validDonationAmount ||
+            this.state.donationAmount.isZero()
+          }
+        >
           Donate
         </Button>
         {}
