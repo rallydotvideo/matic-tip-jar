@@ -11001,10 +11001,17 @@
       "links": {},
       "address": "0xFfBd886f726764681249071A6C38083CA768021E",
       "transactionHash": "0x70c6389bdcad15c63da83395609ab7bf689373e9fe4b6a1d9662f8f9eaa01ba4"
+    },
+    "80001": {
+      "events": {},
+      "links": {},
+      "address": "0x5eb761c4bB3e0DD5f0319edc01A08B6f2af9C7a8",
+      "transactionHash": "0x6ab016006f15cf567db29484c5782b722d00fe4b246880f4955b1f70f03f7b9d"
     }
   },
   "schemaVersion": "3.4.4",
-  "updatedAt": "2021-12-30T06:29:43.155Z",
+  "updatedAt": "2021-12-30T06:32:33.090Z",
+  "networkType": "ethereum",
   "devdoc": {
     "methods": {
       "createTipJar(bytes32)": {
