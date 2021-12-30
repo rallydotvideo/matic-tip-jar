@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "TipJar dApp for the Polygon blockchain",
   "author": "Jax Hodgkinson",
-  "homepage": "http://jaxhodg.github.io/matic-tip-jar",
+  "homepage": ".",
   "dependencies": {
     "-": "^0.0.1",
     "@emotion/react": "^11.4.0",
@@ -41,7 +41,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "deploy": "npm run build"
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -51,5 +52,8 @@
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ]
+  ],
+  "devDependencies": {
+    "gh-pages": "^2.2.0"
+  }
 }
