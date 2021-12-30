@@ -10,6 +10,19 @@ module.exports = {
       port: 7545,
       network_id: "*",
     },
+    mumbai: {
+      provider: () =>
+        new HDWalletProvider(
+          process.env.MNEMONIC,
+          `https://rpc-mumbai.maticvigil.com/v1/bd76d9f2e2c3993bbfef0082f25c30d017fc1feb`
+        ),
+      network_id: 80001,
+      confirmations: 2,
+      timeoutBlocks: 200,
+      skipDryRun: true,
+      gas: 6000000,
+      gasPrice: 10000000000,
+    },
   },
   contracts_directory: "./src/contracts/",
   contracts_build_directory: "./src/abis/",

@@ -21,7 +21,7 @@ contract("TipJar", (accounts) => {
   });
 
   it("allows creating TipJar", async function () {
-    let jarId = web3.utils.padRight(web3.utils.utf8ToHex("123abc"), 34); //32 bytes that are two characters each, + 0x
+    let jarId = web3.utils.padRight(web3.utils.utf8ToHex("123abc"), 34);
 
     await instance.createTipJar(jarId);
 
@@ -35,13 +35,13 @@ contract("TipJar", (accounts) => {
   });
 
   it("reverts invalid TipJar creation", async function () {
-    let jarId = web3.utils.padRight(web3.utils.utf8ToHex("a"), 34); //32 bytes that are two characters each, + 0x
+    let jarId = web3.utils.padRight(web3.utils.utf8ToHex("a"), 34);
 
     await truffleAssert.reverts(instance.createTipJar(jarId));
   });
 
   it("allows donating in TipJar", async function () {
-    let jarId = web3.utils.padRight(web3.utils.utf8ToHex("123abc"), 34); //32 bytes that are two characters each, + 0x
+    let jarId = web3.utils.padRight(web3.utils.utf8ToHex("123abc"), 34);
 
     await instance.donate(jarId, {
       from: accounts[1],
@@ -54,7 +54,7 @@ contract("TipJar", (accounts) => {
   });
 
   it("allows owner to withdraw", async function () {
-    let jarId = web3.utils.padRight(web3.utils.utf8ToHex("123abc"), 34); //32 bytes that are two characters each, + 0x
+    let jarId = web3.utils.padRight(web3.utils.utf8ToHex("123abc"), 34);
 
     await instance.withdraw(jarId, accounts[0], 500, {
       from: accounts[0],
@@ -66,7 +66,7 @@ contract("TipJar", (accounts) => {
   });
 
   it("reverts non-owner attempting to withdraw", async function () {
-    let jarId = web3.utils.padRight(web3.utils.utf8ToHex("123abc"), 34); //32 bytes that are two characters each, + 0x
+    let jarId = web3.utils.padRight(web3.utils.utf8ToHex("123abc"), 34);
 
     await truffleAssert.reverts(
       instance.withdraw(jarId, accounts[1], 500, {
@@ -80,7 +80,7 @@ contract("TipJar", (accounts) => {
   });
 
   it("allows owner to transfer", async function () {
-    let jarId = web3.utils.padRight(web3.utils.utf8ToHex("123abc"), 34); //32 bytes that are two characters each, + 0x
+    let jarId = web3.utils.padRight(web3.utils.utf8ToHex("123abc"), 34);
 
     await instance.transferTipJar(jarId, accounts[2], {
       from: accounts[0],
@@ -92,7 +92,7 @@ contract("TipJar", (accounts) => {
   });
 
   it("reverts previous owner trying to withdraw", async function () {
-    let jarId = web3.utils.padRight(web3.utils.utf8ToHex("123abc"), 34); //32 bytes that are two characters each, + 0x
+    let jarId = web3.utils.padRight(web3.utils.utf8ToHex("123abc"), 34);
 
     await truffleAssert.reverts(
       instance.withdraw(jarId, accounts[0], 500, {
@@ -106,7 +106,7 @@ contract("TipJar", (accounts) => {
   });
 
   it("allows new owner to withdraw", async function () {
-    let jarId = web3.utils.padRight(web3.utils.utf8ToHex("123abc"), 34); //32 bytes that are two characters each, + 0x
+    let jarId = web3.utils.padRight(web3.utils.utf8ToHex("123abc"), 34);
 
     await instance.withdraw(jarId, accounts[2], 250, {
       from: accounts[2],
@@ -118,7 +118,7 @@ contract("TipJar", (accounts) => {
   });
 
   it("prevents owner from deleting when remaining balance", async function () {
-    let jarId = web3.utils.padRight(web3.utils.utf8ToHex("123abc"), 34); //32 bytes that are two characters each, + 0x
+    let jarId = web3.utils.padRight(web3.utils.utf8ToHex("123abc"), 34);
 
     await truffleAssert.reverts(
       instance.deleteTipJar(jarId, {
@@ -132,7 +132,7 @@ contract("TipJar", (accounts) => {
   });
 
   it("prevents non-owner from deleting", async function () {
-    let jarId = web3.utils.padRight(web3.utils.utf8ToHex("123abc"), 34); //32 bytes that are two characters each, + 0x
+    let jarId = web3.utils.padRight(web3.utils.utf8ToHex("123abc"), 34);
 
     await instance.withdraw(jarId, accounts[0], 250, { from: accounts[2] });
 
@@ -148,7 +148,7 @@ contract("TipJar", (accounts) => {
   });
 
   it("allows owner to delete", async function () {
-    let jarId = web3.utils.padRight(web3.utils.utf8ToHex("123abc"), 34); //32 bytes that are two characters each, + 0x
+    let jarId = web3.utils.padRight(web3.utils.utf8ToHex("123abc"), 34);
 
     await instance.deleteTipJar(jarId, {
       from: accounts[2],
