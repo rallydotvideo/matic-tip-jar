@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "/matic-tip-jar/precache-manifest.834e8966c4aa92081a73b23136ada70a.js"
+  "/matic-tip-jar/precache-manifest.f6c62d6c3bd19a96f36f690b6f20241a.js"
 );
 
 workbox.clientsClaim();

@@ -1,7 +1,7 @@
 {
   "main.css": "/matic-tip-jar/static/css/main.2581624e.chunk.css",
-  "main.js": "/matic-tip-jar/static/js/main.a5ccb821.chunk.js",
-  "main.js.map": "/matic-tip-jar/static/js/main.a5ccb821.chunk.js.map",
+  "main.js": "/matic-tip-jar/static/js/main.c6504152.chunk.js",
+  "main.js.map": "/matic-tip-jar/static/js/main.c6504152.chunk.js.map",
   "static/css/1.434f11cf.chunk.css": "/matic-tip-jar/static/css/1.434f11cf.chunk.css",
   "static/js/1.ec99dfb4.chunk.js": "/matic-tip-jar/static/js/1.ec99dfb4.chunk.js",
   "static/js/1.ec99dfb4.chunk.js.map": "/matic-tip-jar/static/js/1.ec99dfb4.chunk.js.map",
@@ -10,6 +10,6 @@
   "static/css/main.2581624e.chunk.css.map": "/matic-tip-jar/static/css/main.2581624e.chunk.css.map",
   "static/css/1.434f11cf.chunk.css.map": "/matic-tip-jar/static/css/1.434f11cf.chunk.css.map",
   "index.html": "/matic-tip-jar/index.html",
-  "precache-manifest.834e8966c4aa92081a73b23136ada70a.js": "/matic-tip-jar/precache-manifest.834e8966c4aa92081a73b23136ada70a.js",
+  "precache-manifest.f6c62d6c3bd19a96f36f690b6f20241a.js": "/matic-tip-jar/precache-manifest.f6c62d6c3bd19a96f36f690b6f20241a.js",
   "service-worker.js": "/matic-tip-jar/service-worker.js"
 }

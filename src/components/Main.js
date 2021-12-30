@@ -36,7 +36,7 @@ class CreateJar extends Component {
       .createTipJar(hexId)
       .send({ from: this.props.account, value: 0 });
 
-    window.location.href = "/matic-tip-jar" + this.state.jarId;
+    window.location.href = "/matic-tip-jar/" + this.state.jarId;
   };
 
   render() {
@@ -300,7 +300,7 @@ class EditJar extends Component {
               .deleteTipJar(this.props.pathHex)
               .send({ from: this.props.account, value: 0 });
 
-            window.location.href = "/matic-tip-jar";
+            window.location.href = "/matic-tip-jar/";
           }}
           disabled={this.props.balance > 0}
         >
@@ -327,7 +327,7 @@ class Main extends Component {
         {this.props.path === "" ? (
           <CreateJar {...this.props} />
         ) : (
-          (window.location.href = "/matic-tip-jar")
+          (window.location.href = "/matic-tip-jar/")
         )}
       </Container>
     );

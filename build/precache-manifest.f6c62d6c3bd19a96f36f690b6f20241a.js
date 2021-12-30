@@ -1,11 +1,11 @@
 self.__precacheManifest = [
   {
-    "revision": "a5ccb82137de36f1b979",
+    "revision": "c65041527e1522eec63c",
     "url": "/matic-tip-jar/static/css/main.2581624e.chunk.css"
   },
   {
-    "revision": "a5ccb82137de36f1b979",
-    "url": "/matic-tip-jar/static/js/main.a5ccb821.chunk.js"
+    "revision": "c65041527e1522eec63c",
+    "url": "/matic-tip-jar/static/js/main.c6504152.chunk.js"
   },
   {
     "revision": "ec99dfb45598b0cf0242",
@@ -20,7 +20,7 @@ self.__precacheManifest = [
     "url": "/matic-tip-jar/static/js/runtime~main.95348d44.js"
   },
   {
-    "revision": "a4e48eab3806bd6f895f201c0b266838",
+    "revision": "b38fcfba6551c5c3830b50fb52f28334",
     "url": "/matic-tip-jar/index.html"
   }
 ];
