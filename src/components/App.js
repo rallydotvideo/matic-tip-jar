@@ -9,7 +9,7 @@ class App extends Component {
   constructor(props) {
     super(props);
 
-    const path = window.location.pathname.replace("/", "");
+    const path = window.location.pathname.replace("/matic-tip-jar", "");
 
     const pathHex = Web3.utils.padRight(Web3.utils.utf8ToHex(path), 34);
 
