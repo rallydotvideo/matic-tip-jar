@@ -63,7 +63,7 @@ class App extends Component {
       try {
         await window.ethereum.request({
           method: "wallet_switchEthereumChain",
-          params: [{ chainId: "0x13881" }],
+          params: [{ chainId: "0x89" }],
         });
       } catch (switchError) {
         // This error code indicates that the chain has not been added to MetaMask.
@@ -82,23 +82,6 @@ class App extends Component {
                   },
                   rpcUrls: ["https://polygon-rpc.com/"],
                   blockExplorerUrls: ["https://polygonscan.com/"],
-                },
-              ],
-            });
-
-            await window.ethereum.request({
-              method: "wallet_addEthereumChain",
-              params: [
-                {
-                  chainId: "0x13881",
-                  chainName: "Polygon Testnet Mumbai",
-                  nativeCurrency: {
-                    name: "Matic",
-                    symbol: "MATIC",
-                    decimals: 18,
-                  },
-                  rpcUrls: ["https://rpc-mumbai.maticvigil.com/"],
-                  blockExplorerUrls: ["https://mumbai.polygonscan.com/"],
                 },
               ],
             });
