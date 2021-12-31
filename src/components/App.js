@@ -43,6 +43,11 @@ class App extends Component {
     const web3 = window.web3;
     this.setState({ web3 });
 
+    window.ethereum.on("chainChanged", (_chainId) => window.location.reload());
+    window.ethereum.on("accountsChanged", (_chainId) =>
+      window.location.reload()
+    );
+
     // Adds the user's address to the state
     const accounts = await web3.eth.getAccounts();
     this.setState({ account: accounts[0] });

@@ -4,6 +4,7 @@ import InputGroup from "react-bootstrap/InputGroup";
 import FormControl from "react-bootstrap/FormControl";
 import Container from "react-bootstrap/Container";
 import Button from "react-bootstrap/Button";
+import Toast from "react-bootstrap/Toast";
 
 import "./App.css";
 
@@ -12,6 +13,7 @@ class CreateJar extends Component {
     super(props);
     this.state = {
       validId: true,
+      loadingTransaction: false,
     };
   }
 
@@ -36,16 +38,35 @@ class CreateJar extends Component {
       34
     );
 
-    await this.props.tipjar.methods
-      .createTipJar(hexId)
-      .send({ from: this.props.account, value: 0 });
+    this.setState({ loadingTransaction: true });
 
-    window.location.href = "/" + this.state.jarId;
+    try {
+      await this.props.tipjar.methods
+        .createTipJar(hexId)
+        .send({ from: this.props.account, value: 0 });
+
+      window.location.href = "/" + this.state.jarId;
+    } catch {
+      this.setState({ loadingTransaction: false });
+    }
   };
 
   render() {
     return (
       <div>
+        <Toast
+          show={this.state.loadingTransaction}
+          style={{
+            textAlign: "center",
+            marginLeft: "auto",
+            marginRight: "auto",
+          }}
+        >
+          <Toast.Body>
+            <strong>Loading Transaction</strong>
+          </Toast.Body>
+        </Toast>
+
         <InputGroup className="mb-3">
           <InputGroup.Text>Jar Id</InputGroup.Text>
           <FormControl
@@ -77,6 +98,8 @@ class DonationField extends Component {
 
       totalGasEstimate: Web3.utils.toBN(0),
       total: Web3.utils.toBN(0),
+
+      loadingTransaction: false,
     };
   }
 
@@ -115,19 +138,45 @@ class DonationField extends Component {
   };
 
   handleSubmit = async () => {
-    await this.props.tipjar.methods.donate(this.props.pathHex).send({
-      from: this.props.account,
-      value: this.state.donationAmount,
-    });
+    this.setState({ loadingTransaction: true });
+    try {
+      await this.props.tipjar.methods.donate(this.props.pathHex).send({
+        from: this.props.account,
+        value: this.state.donationAmount,
+      });
 
-    window.location.reload(false);
+      window.location.reload(false);
+    } catch {
+      this.setState({ loadingTransaction: false });
+    }
   };
 
   render() {
     return (
       <div>
-        <h1>{this.props.path}</h1>
-
+        <Button
+          variant="secondary"
+          onClick={() => {
+            navigator.clipboard.writeText(
+              "https://matic-tip-jar.pages.dev/" + this.props.path
+            );
+          }}
+        >
+          {"https://matic-tip-jar.pages.dev/" + this.props.path + " 📋"}
+        </Button>
+        <br /> <br />
+        <Toast
+          show={this.state.loadingTransaction}
+          style={{
+            textAlign: "center",
+            marginLeft: "auto",
+            marginRight: "auto",
+          }}
+        >
+          <Toast.Body>
+            <strong>Loading Transaction</strong>
+          </Toast.Body>
+        </Toast>
         <InputGroup className="mb-3">
           <InputGroup.Text>Donation</InputGroup.Text>
           <FormControl
@@ -138,7 +187,6 @@ class DonationField extends Component {
           />
           <InputGroup.Text>MATIC</InputGroup.Text>
         </InputGroup>
-
         <InputGroup className="mb-3">
           <InputGroup.Text>Estimated Gas</InputGroup.Text>
           <FormControl
@@ -147,13 +195,11 @@ class DonationField extends Component {
           />
           <InputGroup.Text>MATIC</InputGroup.Text>
         </InputGroup>
-
         <InputGroup className="mb-3">
           <InputGroup.Text>Total</InputGroup.Text>
           <FormControl value={Web3.utils.fromWei(this.state.total)} readOnly />
           <InputGroup.Text>MATIC</InputGroup.Text>
         </InputGroup>
-
         <Button
           variant="primary"
           onClick={this.handleSubmit}
@@ -183,6 +229,8 @@ class EditJar extends Component {
       transferAddress: "",
 
       validTransferAddress: true,
+
+      loadingTransaction: false,
     };
   }
 
@@ -213,15 +261,19 @@ class EditJar extends Component {
   };
 
   handleWithdrawSubmit = async () => {
-    await this.props.tipjar.methods
-      .withdraw(
-        this.props.pathHex,
-        this.state.withdrawAddress,
-        this.state.withdrawAmount
-      )
-      .send({ from: this.props.account, value: 0 });
-
-    window.location.reload(false);
+    this.setState({ loadingTransaction: true });
+    try {
+      await this.props.tipjar.methods
+        .withdraw(
+          this.props.pathHex,
+          this.state.withdrawAddress,
+          this.state.withdrawAmount
+        )
+        .send({ from: this.props.account, value: 0 });
+      window.location.reload(false);
+    } catch {
+      this.setState({ loadingTransaction: false });
+    }
   };
 
   handleTransferAddressChange = async (event) => {
@@ -234,10 +286,15 @@ class EditJar extends Component {
   };
 
   handleTransferSubmit = async () => {
-    await this.props.tipjar.methods
-      .transferTipJar(this.props.pathHex, this.state.transferAddress)
-      .send({ from: this.props.account, value: 0 });
-    window.location.reload(false);
+    this.setState({ loadingTransaction: true });
+    try {
+      await this.props.tipjar.methods
+        .transferTipJar(this.props.pathHex, this.state.transferAddress)
+        .send({ from: this.props.account, value: 0 });
+      window.location.reload(false);
+    } catch {
+      this.setState({ loadingTransaction: false });
+    }
   };
 
   render() {
@@ -245,6 +302,19 @@ class EditJar extends Component {
       <div>
         <hr />
         <p>Current Balance: {Web3.utils.fromWei(this.props.balance)}</p>
+
+        <Toast
+          show={this.state.loadingTransaction}
+          style={{
+            textAlign: "center",
+            marginLeft: "auto",
+            marginRight: "auto",
+          }}
+        >
+          <Toast.Body>
+            <strong>Loading Transaction</strong>
+          </Toast.Body>
+        </Toast>
 
         <InputGroup className="mb-3">
           <InputGroup.Text>Withdraw</InputGroup.Text>
@@ -302,11 +372,16 @@ class EditJar extends Component {
         <Button
           variant="danger"
           onClick={async () => {
-            await this.props.tipjar.methods
-              .deleteTipJar(this.props.pathHex)
-              .send({ from: this.props.account, value: 0 });
+            this.setState({ loadingTransaction: true });
+            try {
+              await this.props.tipjar.methods
+                .deleteTipJar(this.props.pathHex)
+                .send({ from: this.props.account, value: 0 });
 
-            window.location.href = "/";
+              window.location.href = "/";
+            } catch {
+              this.setState({ loadingTransaction: false });
+            }
           }}
           disabled={this.props.balance > 0}
         >
