@@ -70,12 +70,13 @@ class App extends Component {
                 {
                   chainId: "0x89",
                   chainName: "Polygon Mainnet",
-                  rpcUrl: "https://polygon-rpc.com/",
                   nativeCurrency: {
                     name: "Matic",
                     symbol: "MATIC",
                     decimals: 18,
                   },
+                  rpcUrls: ["https://polygon-rpc.com/"],
+                  blockExplorerUrls: ["https://polygonscan.com/"],
                 },
               ],
             });
@@ -86,12 +87,13 @@ class App extends Component {
                 {
                   chainId: "0x13881",
                   chainName: "Polygon Testnet Mumbai",
-                  rpcUrl: "https://rpc.maticvigil.com/",
                   nativeCurrency: {
                     name: "Matic",
                     symbol: "MATIC",
                     decimals: 18,
                   },
+                  rpcUrls: ["https://rpc-mumbai.maticvigil.com/"],
+                  blockExplorerUrls: ["https://mumbai.polygonscan.com/"],
                 },
               ],
             });
@@ -103,10 +105,14 @@ class App extends Component {
   }
 
   async getData() {
-    const isJar = await this.state.tipjar.methods
-      .isJar(this.state.pathHex)
-      .call();
-    this.setState({ isJar });
+    try {
+      const isJar = await this.state.tipjar.methods
+        .isJar(this.state.pathHex)
+        .call();
+      this.setState({ isJar });
+    } catch {
+      window.location.reload(false);
+    }
 
     const jar = await this.state.tipjar.methods.jar(this.state.pathHex).call();
     const isOwner = this.state.account === jar.owner;
