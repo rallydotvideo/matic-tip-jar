@@ -23,6 +23,16 @@ module.exports = {
       gas: 6000000,
       gasPrice: 10000000000,
     },
+    polygon: {
+      provider: () =>
+        new HDWalletProvider(process.env.MNEMONIC, `https://polygon-rpc.com/`),
+      network_id: 137,
+      confirmations: 2,
+      timeoutBlocks: 200,
+      skipDryRun: true,
+      gas: 6000000,
+      gasPrice: 160000000000,
+    },
   },
   contracts_directory: "./src/contracts/",
   contracts_build_directory: "./src/abis/",
